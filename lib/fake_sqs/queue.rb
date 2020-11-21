@@ -20,7 +20,9 @@ module FakeSQS
 
       @name = options.fetch("QueueName")
       @arn = options.fetch("Arn") { "arn:aws:sqs:us-east-1:#{SecureRandom.hex}:#{@name}" }
-      @queue_attributes = options.fetch("Attributes") { {} }
+      @queue_attributes = options.keys.select { |k| /Attribute.\d.Name/ =~ k }.map do |k|
+        [options[k], options[k.gsub(/^Attribute.(\d).Name$/, 'Attribute.\1.Value')]]
+      end.to_h
       @lock = Monitor.new
       reset
     end
